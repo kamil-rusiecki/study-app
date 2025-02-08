@@ -5,29 +5,49 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
 const QuestionInput = ({ onQuestionsImported }) => {
   const [yamlContent, setYamlContent] = useState('');
+  const [error, setError] = useState('');
+
+  const validateQuestions = (questions) => {
+    if (!Array.isArray(questions)) {
+      throw new Error('Questions must be an array');
+    }
+
+    questions.forEach((q, index) => {
+      if (!q.question) {
+        throw new Error(`Question ${index + 1} is missing text`);
+      }
+      if (!q.options || !Array.isArray(q.options)) {
+        throw new Error(`Question ${index + 1} is missing options array`);
+      }
+      if (q.options.length < 2) {
+        throw new Error(`Question ${index + 1} must have at least 2 options (currently has ${q.options.length})`);
+      }
+      if (typeof q.correct !== 'number' || q.correct < 0 || q.correct >= q.options.length) {
+        throw new Error(`Question ${index + 1} has invalid correct answer index (must be between 0 and the number of options minus 1)`);
+      }
+    });
+  };
 
   const handleParse = () => {
     try {
       const parsed = parse(yamlContent);
+      setError('');
 
       // Validate the parsed content
-      if (!parsed.questions || !Array.isArray(parsed.questions)) {
+      if (!parsed.questions) {
         throw new Error('Invalid format: Missing questions array');
       }
 
-      // Validate each question
-      parsed.questions.forEach((q, index) => {
-        if (!q.question || !q.options || !Array.isArray(q.options) || 
-            q.options.length !== 4 || typeof q.correct !== 'number') {
-          throw new Error(`Invalid question format at index ${index}`);
-        }
-      });
+      validateQuestions(parsed.questions);
 
       // Store questions in localStorage
       localStorage.setItem('questions', JSON.stringify(parsed.questions));
       alert(`Imported ${parsed.questions.length} questions successfully!`);
-      onQuestionsImported();
+      if (onQuestionsImported) {
+        onQuestionsImported();
+      }
     } catch (error) {
+      setError(error.message);
       alert('Error: ' + error.message);
     }
   };
@@ -50,8 +70,20 @@ const QuestionInput = ({ onQuestionsImported }) => {
       - Paris
       - Berlin
       - Madrid
-    correct: 1  # Index starts at 0, so 1 means Paris`}
+      - Rome
+      - Warsaw
+    correct: 1  # Index starts at 0, so 1 means Paris
+  - question: What is 2+2?
+    options:
+      - 3
+      - 4
+    correct: 1  # Shows that you can have just 2 options`}
           />
+          {error && (
+            <div className="text-red-500 p-2 bg-red-50 rounded">
+              {error}
+            </div>
+          )}
           <Button onClick={handleParse} className="w-full">
             Import Questions
           </Button>
