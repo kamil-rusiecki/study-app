@@ -1,95 +1,141 @@
 import React, { useState } from 'react';
 import { parse } from 'yaml';
 import { Button } from './ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+
+const Tab = ({ isActive, onClick, children }) => (
+  <button
+    onClick={onClick}
+    className={`
+      px-4 sm:px-6 py-2 font-normal text-sm relative whitespace-nowrap
+      ${isActive 
+        ? 'text-purple-600' 
+        : 'text-gray-500 hover:text-gray-700'}
+    `}
+  >
+    {children}
+    {isActive && (
+      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-600" />
+    )}
+  </button>
+);
+
+const defaultYamlContent = `questions:
+  # Przykład 1: Pytanie z wieloma opcjami
+  - question: Co jest stolicą Polski?
+    options:
+      - Kraków
+      - Warszawa
+      - Poznań
+      - Wrocław
+      - Gdańsk
+    correct: 1 # Warszawa
+
+  # Przykład 2: Pytanie z dwiema opcjami
+  - question: Czy Wisła jest najdłuższą rzeką w Polsce?
+    options:
+      - Tak
+      - Nie
+    correct: 0 # Tak
+
+  # Przykład 3: Pytanie matematyczne
+  - question: Ile wynosi pierwiastek kwadratowy z 16?
+    options:
+      - 2
+      - 4
+      - 8
+      - 16
+    correct: 1 # 4
+
+# Wskazówki:
+# - Indeksowanie zaczyna się od 0
+# - Każde pytanie musi mieć co najmniej 2 opcje
+# - Wartość "correct" wskazuje na indeks poprawnej odpowiedzi`;
 
 const QuestionInput = ({ onQuestionsImported }) => {
-  const [yamlContent, setYamlContent] = useState('');
+  const [inputMethod, setInputMethod] = useState('yaml');
+  const [yamlContent, setYamlContent] = useState(defaultYamlContent);
   const [error, setError] = useState('');
 
-  const validateQuestions = (questions) => {
-    if (!Array.isArray(questions)) {
-      throw new Error('Questions must be an array');
-    }
-
-    questions.forEach((q, index) => {
-      if (!q.question) {
-        throw new Error(`Question ${index + 1} is missing text`);
-      }
-      if (!q.options || !Array.isArray(q.options)) {
-        throw new Error(`Question ${index + 1} is missing options array`);
-      }
-      if (q.options.length < 2) {
-        throw new Error(`Question ${index + 1} must have at least 2 options (currently has ${q.options.length})`);
-      }
-      if (typeof q.correct !== 'number' || q.correct < 0 || q.correct >= q.options.length) {
-        throw new Error(`Question ${index + 1} has invalid correct answer index (must be between 0 and the number of options minus 1)`);
-      }
-    });
-  };
-
-  const handleParse = () => {
+  const handleSubmit = () => {
     try {
       const parsed = parse(yamlContent);
-      setError('');
-
-      // Validate the parsed content
       if (!parsed.questions) {
-        throw new Error('Invalid format: Missing questions array');
+        throw new Error('Nieprawidłowy format pliku. Upewnij się, że plik zaczyna się od "questions:"');
       }
+      if (!Array.isArray(parsed.questions) || parsed.questions.length === 0) {
+        throw new Error('Lista pytań jest pusta lub nieprawidłowa');
+      }
+      
+      // Walidacja każdego pytania
+      parsed.questions.forEach((q, index) => {
+        if (!q.question) {
+          throw new Error(`Pytanie ${index + 1} nie ma treści`);
+        }
+        if (!Array.isArray(q.options) || q.options.length < 2) {
+          throw new Error(`Pytanie ${index + 1} musi mieć co najmniej 2 opcje odpowiedzi`);
+        }
+        if (typeof q.correct !== 'number' || q.correct < 0 || q.correct >= q.options.length) {
+          throw new Error(`Pytanie ${index + 1} ma nieprawidłowy indeks poprawnej odpowiedzi`);
+        }
+      });
 
-      validateQuestions(parsed.questions);
-
-      // Store questions in localStorage
       localStorage.setItem('questions', JSON.stringify(parsed.questions));
-      alert(`Imported ${parsed.questions.length} questions successfully!`);
-      if (onQuestionsImported) {
-        onQuestionsImported();
-      }
+      onQuestionsImported();
     } catch (error) {
       setError(error.message);
-      alert('Error: ' + error.message);
     }
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Import Questions (YAML format)</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <textarea
-            value={yamlContent}
-            onChange={(e) => setYamlContent(e.target.value)}
-            className="w-full h-64 p-4 border rounded-md font-mono text-sm"
-            placeholder={`questions:
-  - question: What is the capital of France?
-    options:
-      - London
-      - Paris
-      - Berlin
-      - Madrid
-      - Rome
-      - Warsaw
-    correct: 1  # Index starts at 0, so 1 means Paris
-  - question: What is 2+2?
-    options:
-      - 3
-      - 4
-    correct: 1  # Shows that you can have just 2 options`}
-          />
-          {error && (
-            <div className="text-red-500 p-2 bg-red-50 rounded">
-              {error}
-            </div>
-          )}
-          <Button onClick={handleParse} className="w-full">
-            Import Questions
+    <div className="space-y-6">
+      <div className="border-b border-gray-200 -mx-4 sm:mx-0">
+        <div className="flex px-4 sm:px-0">
+          <Tab 
+            isActive={inputMethod === 'yaml'} 
+            onClick={() => setInputMethod('yaml')}
+          >
+            Import YAML
+          </Tab>
+          <Tab 
+            isActive={inputMethod === 'manual'} 
+            onClick={() => setInputMethod('manual')}
+          >
+            Manualnie
+          </Tab>
+        </div>
+      </div>
+
+      <div className="space-y-6 px-4 sm:px-0">
+        <h2 className="text-lg sm:text-xl font-normal text-slate-700">
+          Wklej plik YAML
+        </h2>
+
+        <textarea
+          value={yamlContent}
+          onChange={(e) => setYamlContent(e.target.value)}
+          className="w-full h-64 sm:h-96 p-4 font-mono text-sm bg-gray-50 border border-gray-200 
+                     rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 
+                     focus:border-transparent resize-none"
+          spellCheck="false"
+        />
+
+        {error && (
+          <div className="text-red-500 p-3 sm:p-4 bg-red-50 rounded-lg text-sm sm:text-base">
+            {error}
+          </div>
+        )}
+
+        <div className="flex justify-end">
+          <Button
+            onClick={handleSubmit}
+            size="lg"
+            className="w-full sm:w-auto"
+          >
+            Rozpocznij test
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 
