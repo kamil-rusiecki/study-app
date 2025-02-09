@@ -1,13 +1,13 @@
 import React from 'react';
-import { cn } from "@/lib/utils";
+import { cn } from "../../lib/utils";
 
 const buttonVariants = {
-  primary: "bg-purple-600 text-white hover:bg-purple-700",
+  primary: "bg-blue-600 text-white hover:bg-blue-700",
   secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200",
   outline: "bg-transparent border border-gray-200 hover:bg-gray-50",
   ghost: "bg-transparent hover:bg-gray-50",
-  link: "text-purple-600 hover:text-purple-700 hover:underline",
-  back: "text-purple-600 hover:text-purple-700 flex items-center"
+  link: "text-blue-600 hover:text-blue-700 hover:underline",
+  back: "text-blue-600 hover:text-blue-700 hover:underline flex items-center"
 };
 
 const buttonSizes = {

@@ -39,6 +39,29 @@ const QuestionTest = () => {
     return score;
   };
 
+  const calculateGrade = (score, total) => {
+    const percentage = (score / total) * 100;
+    
+    if (percentage < 60) return 'Niedostateczny';
+    if (percentage < 70) return 'Dostateczny';
+    if (percentage < 75) return 'Dostateczny plus';
+    if (percentage < 85) return 'Dobry';
+    if (percentage < 90) return 'Dobry plus';
+    return 'Bardzo dobry';
+  };
+
+  const getGradeColor = (grade) => {
+    switch(grade) {
+      case 'Niedostateczny': return 'text-red-600';
+      case 'Dostateczny': return 'text-yellow-600';
+      case 'Dostateczny plus': return 'text-yellow-500';
+      case 'Dobry': return 'text-green-600';
+      case 'Dobry plus': return 'text-green-500';
+      case 'Bardzo dobry': return 'text-emerald-600';
+      default: return 'text-gray-600';
+    }
+  };
+
   const handleSubmit = () => {
     setShowResults(true);
   };
@@ -48,7 +71,7 @@ const QuestionTest = () => {
       <Card>
         <CardContent className="p-6">
           <p className="text-center text-gray-500">
-            No questions available. Please import questions first.
+            Brak dostępnych pytań. Proszę najpierw zaimportować pytania.
           </p>
         </CardContent>
       </Card>
@@ -62,7 +85,7 @@ const QuestionTest = () => {
       {questions.map((q, questionIndex) => (
         <Card key={questionIndex}>
           <CardHeader>
-            <CardTitle>Question {questionIndex + 1}</CardTitle>
+            <CardTitle>Pytanie {questionIndex + 1}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-lg mb-4">{q.question}</p>
@@ -96,8 +119,8 @@ const QuestionTest = () => {
               <div className="mt-4 p-4 rounded bg-gray-50">
                 <p className="font-semibold">
                   {selectedAnswers[questionIndex] === q.correct 
-                    ? '✓ Correct!' 
-                    : `✗ Incorrect. The correct answer is: ${q.options[q.correct]}`}
+                    ? '✓ Poprawnie!' 
+                    : `✗ Niepoprawnie. Prawidłowa odpowiedź to: ${q.options[q.correct]}`}
                 </p>
               </div>
             )}
@@ -116,14 +139,17 @@ const QuestionTest = () => {
                 : 'bg-gray-300 cursor-not-allowed'
             }`}
           >
-            {allQuestionsAnswered ? 'Submit Answers' : 'Please answer all questions'}
+            {allQuestionsAnswered ? 'Zatwierdź odpowiedzi' : 'Proszę odpowiedzieć na wszystkie pytania'}
           </button>
         ) : (
           <div className="text-center space-y-4">
             <div className="bg-gray-100 p-4 rounded-lg">
-              <p className="text-xl font-bold">Your Results</p>
-              <p className="text-lg">Score: {calculateScore()} out of {questions.length}</p>
-              <p className="text-lg">Percentage: {((calculateScore() / questions.length) * 100).toFixed(1)}%</p>
+              <p className="text-xl font-bold">Twoje wyniki</p>
+              <p className="text-lg">Wynik: {calculateScore()} z {questions.length}</p>
+              <p className="text-lg">Procent: {((calculateScore() / questions.length) * 100).toFixed(1)}%</p>
+              <p className={`text-lg font-semibold ${getGradeColor(calculateGrade(calculateScore(), questions.length))}`}>
+                Ocena: {calculateGrade(calculateScore(), questions.length)}
+              </p>
             </div>
           </div>
         )}

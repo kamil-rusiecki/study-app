@@ -91,7 +91,7 @@ const SubjectSelector = ({ onSubjectSelect, onCustomQuestions }) => {
           Ładowanie przedmiotów...
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 px-4 sm:px-0">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {subjects.map((subject) => (
             <SubjectTile
               key={subject.name}

@@ -37,8 +37,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-        <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8 sm:mb-12">
+      <div className="container mx-auto grid grid-cols-12 gap-6 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <header className="col-span-12 lg:col-span-10 lg:col-start-2 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8 sm:mb-12">
           <h1 className="text-xl sm:text-2xl font-normal text-slate-700">Study App</h1>
           
           {view === 'subject-selector' ? (
@@ -61,7 +61,7 @@ function App() {
           )}
         </header>
 
-        <main className="w-full max-w-4xl mx-auto">
+        <main className="col-span-12 lg:col-span-10 lg:col-start-2">
           {view === 'subject-selector' && (
             <SubjectSelector
               onSubjectSelect={handleSubjectSelect}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { parse } from 'yaml';
 import { Button } from './ui/button';
+import ManualQuestionInput from './ManualQuestionInput';
 
 const Tab = ({ isActive, onClick, children }) => (
   <button
@@ -8,13 +9,13 @@ const Tab = ({ isActive, onClick, children }) => (
     className={`
       px-4 sm:px-6 py-2 font-normal text-sm relative whitespace-nowrap
       ${isActive 
-        ? 'text-purple-600' 
+        ? 'text-blue-600' 
         : 'text-gray-500 hover:text-gray-700'}
     `}
   >
     {children}
     {isActive && (
-      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-600" />
+      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
     )}
   </button>
 );
@@ -53,7 +54,7 @@ const defaultYamlContent = `questions:
 
 const QuestionInput = ({ onQuestionsImported }) => {
   const [inputMethod, setInputMethod] = useState('yaml');
-  const [yamlContent, setYamlContent] = useState(defaultYamlContent);
+  const [yamlContent, setYamlContent] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = () => {
@@ -88,7 +89,7 @@ const QuestionInput = ({ onQuestionsImported }) => {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-gray-200 -mx-4 sm:mx-0">
+      <div className="border-b border-gray-200">
         <div className="flex px-4 sm:px-0">
           <Tab 
             isActive={inputMethod === 'yaml'} 
@@ -105,7 +106,8 @@ const QuestionInput = ({ onQuestionsImported }) => {
         </div>
       </div>
 
-      <div className="space-y-6 px-4 sm:px-0">
+      {inputMethod === 'yaml' ? (
+        <div className="space-y-6 px-4 sm:px-0">
         <h2 className="text-lg sm:text-xl font-normal text-slate-700">
           Wklej plik YAML
         </h2>
@@ -113,9 +115,10 @@ const QuestionInput = ({ onQuestionsImported }) => {
         <textarea
           value={yamlContent}
           onChange={(e) => setYamlContent(e.target.value)}
-          className="w-full h-64 sm:h-96 p-4 font-mono text-sm bg-gray-50 border border-gray-200 
-                     rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 
-                     focus:border-transparent resize-none"
+          placeholder={defaultYamlContent}
+          className="w-full min-h-[16rem] sm:min-h-[24rem] p-4 font-mono text-sm bg-gray-50 border border-gray-200 
+                     rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 
+                     focus:border-transparent resize-y"
           spellCheck="false"
         />
 
@@ -130,11 +133,25 @@ const QuestionInput = ({ onQuestionsImported }) => {
             onClick={handleSubmit}
             size="lg"
             className="w-full sm:w-auto"
+            disabled={!yamlContent.trim()}
           >
             Rozpocznij test
           </Button>
         </div>
       </div>
+      ) : (
+        <div className="space-y-6 px-4 sm:px-0">
+          <h2 className="text-lg sm:text-xl font-normal text-slate-700">
+            Dodaj pytania manualnie
+          </h2>
+          <ManualQuestionInput 
+            onSubmit={(questions) => {
+              localStorage.setItem('questions', JSON.stringify(questions));
+              onQuestionsImported();
+            }} 
+          />
+        </div>
+      )}
     </div>
   );
 };
